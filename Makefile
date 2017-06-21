@@ -38,14 +38,13 @@ LNKFLAGS=-lm
 COMPILE.c = $(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -g -c
 
 # wasm suffix rules for srcDir
-$(srcDstDir)/%.c.bc: $(srcDir)/%.c
+$(srcDstDir)/%.c.bc: $(srcDir)/%.c Makefile package.json
 	@mkdir -p $(@D)
 	$(cc.wasm) -emit-llvm --target=wasm32 $(CFLAGS) $< -c -o $@
 
 $(srcDstDir)/%.c.s: $(srcDstDir)/%.c.bc
 	$(llc.wasm) -asm-verbose=false $< -o $@
 
-#S2WASMFLAGS=--import-memory
 S2WASMFLAGS=
 .PRECIOUS: $(srcDstDir)/%.c.wast
 $(srcDstDir)/%.c.wast: $(srcDstDir)/%.c.s
@@ -55,7 +54,7 @@ $(srcDstDir)/%.c.wasm: $(srcDstDir)/%.c.wast
 	$(wast2wasm) $< -o $@
 
 # wasm suffix rules for libDir
-$(libDstDir)/%.c.bc: $(libDir)/%.c
+$(libDstDir)/%.c.bc: $(libDir)/%.c Makefile package.json
 	@mkdir -p $(@D)
 	$(cc.wasm) -emit-llvm --target=wasm32 $(CFLAGS) $< -c -o $@
 
@@ -69,10 +68,12 @@ $(libDstDir)/%.c.wast: $(libDstDir)/%.c.s
 $(libDstDir)/%.c.wasm: $(libDstDir)/%.c.wast
 	$(wast2wasm) $< -o $@
 
+srcs=$(srcDir)/mem.c
+
 all: build.wasm
 
 build.wasm: \
  $(srcDstDir)/mem.c.wasm
 
-clean :
+clean:
 	@rm -rf $(outDir)

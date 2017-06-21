@@ -17,7 +17,7 @@
         "postcleanup": "mkdir -p build out .d",
         "cleanup": "rm -rf out/ build/ .d/",
         "distcleanup": "rm -rf node_modules/ nodev9/ && yarn cleanup",
-        "premem": "make build.wasm && tsc -p src/utils.tsconfig.json && tsc -p src/mem.tsconfig.json",
+        "premem": "make S2WASMFLAGS=--import-memory build.wasm && tsc -p src/utils.tsconfig.json && tsc -p src/mem.tsconfig.json",
         "mem": "yarn nodev9 build/mem.js",
         "predbg": "yarn premem",
         "dbg": "yarn nodev9.dbg build/mem.js"
