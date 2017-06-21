@@ -3,11 +3,6 @@ import {instantiateWasmFile} from "../build/utils";
 /**
  * The import object passed to instantiateWasmFile
  */
-let instanceMem = new WebAssembly.Memory({initial:1});
-let importsForInstance = {
-    "": { memory: instanceMem }
-};
-
 let mem: Uint8Array;
 
 let get_gArrayAddr: (index: number) => number;
@@ -17,12 +12,28 @@ let set_gArray: (val: number, index: number) => number;
 async function load_wasm_imports(): Promise<Error | null> {
     try {
         debugger;
+
+        // TODO: conditionally create instanceMem
+        let instanceMem: WebAssembly.Memory | null =
+            new WebAssembly.Memory({initial:1});
+        let importsForInstance = {
+            "env": { memory: instanceMem }
+        };
+
         let instance = await instantiateWasmFile("./out/src/mem.c.wasm",
             importsForInstance);
         get_gArrayAddr = instance.exports.get_gArrayAddr;
         get_gArray = instance.exports.get_gArray;
         set_gArray = instance.exports.set_gArray;
-        mem = new Uint8Array(instance.exports.memory.buffer);
+        let memory = instance.exports.memory;
+        if (memory == undefined) {
+            console.log("memory was imported");
+            memory = instanceMem;
+        } else {
+            console.log("memory was exported");
+            instanceMem = null;
+        }
+        mem = new Uint8Array(memory.buffer);
         //let sab = new SharedArrayBuffer(2);
         //a = new Uint8Array(sab.slice(0));//instance.exports.a.buffer);
         return Promise.resolve(null);
