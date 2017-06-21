@@ -3,12 +3,12 @@ import {instantiateWasmFile} from "../build/utils";
 /**
  * The import object passed to instantiateWasmFile
  */
-let memory = new WebAssembly.Memory({initial:1})
+let instanceMem = new WebAssembly.Memory({initial:1})
 let importsForInstance = {
-    env: {
-        '': memory
-    }
+     "": { memory: instanceMem }
 };
+
+let a: Uint8Array;
 
 let getMemAddr: (index: number) => number;
 let getMem: (index: number) => number;
@@ -21,6 +21,7 @@ async function load_wasm_imports(): Promise<Error | null> {
         getMemAddr = instance.exports.getMemAddr;
         getMem = instance.exports.getMem;
         setMem = instance.exports.setMem;
+        a = instance.exports.a;
         return Promise.resolve(null);
     } catch (err) {
         return Promise.reject(err);
@@ -31,9 +32,12 @@ async function main() {
     try {
         await load_wasm_imports();
 
-        let arrayU8 = new Uint8Array(memory.buffer);
+        let arrayU8 = new Uint8Array(instanceMem.buffer);
         for (let i = 0; i < 2; i++) {
             console.log(`arrayU8[${i}]=${arrayU8[i]}`);
+        }
+        for (let i = 0; i < 2; i++) {
+            console.log(`a[${i}]=${a[i]}`);
         }
 
         console.log(`getMem(0)=${getMem(0)}`);
@@ -47,6 +51,9 @@ async function main() {
 
         for (let i = 0; i < 2; i++) {
             console.log(`arrayU8[${i}]=${arrayU8[i]}`);
+        }
+        for (let i = 0; i < 2; i++) {
+            console.log(`a[${i}]=${a[i]}`);
         }
 
     } catch(err) {
