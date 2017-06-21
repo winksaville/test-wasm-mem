@@ -11,13 +11,16 @@
     },
     "scripts": {
         "add.nodev9": "rm -rf nodev9 && mkdir nodev9 && curl https://nodejs.org/download/v8-canary/v9.0.0-v8-canary201706199cf43ea3fd/node-v9.0.0-v8-canary201706199cf43ea3fd-linux-x64.tar.xz -s -o node-v9.tar.xz && tar -xJf node-v9.tar.xz -C nodev9 --strip-components 1 && rm node-v9.tar.xz",
-        "nodev9": "./nodev9/bin/node",
+        "nodev9": "./nodev9/bin/node --harmony_sharedarraybuffer",
+        "nodev9.dbg": "./nodev9/bin/node --harmony_sharedarraybuffer --inspect-brk",
         "postinstall": "yarn add.nodev9 && yarn postcleanup",
         "postcleanup": "mkdir -p build out .d",
         "cleanup": "rm -rf out/ build/ .d/",
         "distcleanup": "rm -rf node_modules/ nodev9/ && yarn cleanup",
         "premem": "make build.wasm && tsc -p src/utils.tsconfig.json && tsc -p src/mem.tsconfig.json",
-        "mem": "yarn nodev9 build/mem.js"
+        "mem": "yarn nodev9 build/mem.js",
+        "predbg": "yarn premem",
+        "dbg": "yarn nodev9.dbg build/mem.js"
     },
     "devDependencies": {
         "typescript": "^2.3.4"

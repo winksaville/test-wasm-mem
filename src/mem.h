@@ -3,10 +3,8 @@
 
 #include <sizedtypes.h>
 
-extern u8 a[2];
-
-u8* getMemAddr(u32 index);
-u8 getMem(u32 index);
-u8 setMem(u32 index, u8 val);
+u8* get_gArrayAddr(u32 u8Idx);
+u8 get_gArray(u32 u8Idx);
+u8 set_gArray(u32 u8Idx, u8 val);
 
 #endif

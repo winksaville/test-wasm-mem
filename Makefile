@@ -20,6 +20,9 @@ srcDstDir=$(outDir)/$(srcDir)
 $(shell mkdir -p $(srcDstDir) >/dev/null)
 
 cc.wasm=$(HOME)/prgs/llvmwasm-builder/dist/bin/clang
+llc.wasm=$(HOME)/prgs/llvmwasm-builder/dist/bin/llc
+s2wasm=$(HOME)/prgs/llvmwasm-builder/dist/bin/s2wasm
+wast2wasm=$(HOME)/prgs/llvmwasm-builder/dist/bin/wast2wasm
 wasm2wast=$(HOME)/prgs/llvmwasm-builder/dist/bin/wasm2wast
 wasm-link=$(HOME)/prgs/llvmwasm-builder/dist/bin/wasm-link
 
@@ -35,16 +38,36 @@ LNKFLAGS=-lm
 COMPILE.c = $(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -g -c
 
 # wasm suffix rules for srcDir
-$(srcDstDir)/%.c.wasm: $(srcDir)/%.c
+$(srcDstDir)/%.c.bc: $(srcDir)/%.c
 	@mkdir -p $(@D)
-	$(cc.wasm) --target=wasm32-unknown-unknown-wasm $(CFLAGS) $< -c -o $@
-	$(wasm2wast) $@ -o $(basename $@).wast
+	$(cc.wasm) -emit-llvm --target=wasm32 $(CFLAGS) $< -c -o $@
 
-SRCS= \
-	  $(srcDir)/mem.c
+$(srcDstDir)/%.c.s: $(srcDstDir)/%.c.bc
+	$(llc.wasm) -asm-verbose=false $< -o $@
 
-OBJS= \
-	  $(srcDstDir)/mem.o
+#S2WASMFLAGS=--import-memory
+S2WASMFLAGS=
+.PRECIOUS: $(srcDstDir)/%.c.wast
+$(srcDstDir)/%.c.wast: $(srcDstDir)/%.c.s
+	$(s2wasm) $(S2WASMFLAGS) $< -o $@
+
+$(srcDstDir)/%.c.wasm: $(srcDstDir)/%.c.wast
+	$(wast2wasm) $< -o $@
+
+# wasm suffix rules for libDir
+$(libDstDir)/%.c.bc: $(libDir)/%.c
+	@mkdir -p $(@D)
+	$(cc.wasm) -emit-llvm --target=wasm32 $(CFLAGS) $< -c -o $@
+
+$(libDstDir)/%.c.s: $(libDstDir)/%.c.bc
+	$(llc.wasm) -asm-verbose=false $< -o $@
+
+.PRECIOUS: $(libDstDir)/%.c.wast
+$(libDstDir)/%.c.wast: $(libDstDir)/%.c.s
+	$(s2wasm) $(S2WASMFLAGS) $< -o $@
+
+$(libDstDir)/%.c.wasm: $(libDstDir)/%.c.wast
+	$(wast2wasm) $< -o $@
 
 all: build.wasm
 

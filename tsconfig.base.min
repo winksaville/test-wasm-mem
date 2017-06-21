@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "es2017",
+    "lib": [
+      "ES2017", "ES2017.SharedMemory"
+    ],
+    "module": "commonjs",
+    "moduleResolution": "Node",
+    "sourceMap": true,
+    "allowJs": false,
+    "experimentalDecorators": true
+  }
+}
