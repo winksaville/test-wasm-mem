@@ -13,6 +13,9 @@ async function load_wasm_imports(): Promise<Error | null> {
     try {
         debugger;
 
+        let sab = new SharedArrayBuffer(1 * 65536);
+        console.log(`sab.byteLength=${sab.byteLength}`);
+
         // TODO: conditionally create instanceMem
         let instanceMem: WebAssembly.Memory | null =
             new WebAssembly.Memory({initial:1});
@@ -34,8 +37,6 @@ async function load_wasm_imports(): Promise<Error | null> {
             instanceMem = null;
         }
         mem = new Uint8Array(memory.buffer);
-        //let sab = new SharedArrayBuffer(2);
-        //a = new Uint8Array(sab.slice(0));//instance.exports.a.buffer);
         return Promise.resolve(null);
     } catch (err) {
         return Promise.reject(err);
